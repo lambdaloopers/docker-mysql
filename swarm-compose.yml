@@ -1,0 +1,34 @@
+version: '3.4'
+
+services:
+  mysql:
+    volumes:
+      - ./data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - gateway
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+      labels:
+        - "traefik.docker.network=traefik_gateway"
+        - "traefik.port=3306"
+        - "traefik.frontend.rule=Host:database.example.com"
+        - "traefik.backend=mysql"
+
+networks:
+  gateway:
+    external:
+      name: traefik_gateway
